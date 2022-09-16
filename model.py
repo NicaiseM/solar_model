@@ -10,24 +10,13 @@ from epw import epw
 class Model():
     
     def __init__(self):
-        self.month = {'Jan': 1,
-                      'Feb': 2,
-                      'Mar': 3,
-                      'Apr': 4,
-                      'May': 5,
-                      'Jun': 6,
-                      'Jul': 7,
-                      'Aug': 8,
-                      'Sep': 9,
-                      'Oct': 10,
-                      'Nov': 11,
-                      'Dec': 12}
+        pass
 
     def processing(self, power_file, weather_file):
         self.open(power_file, weather_file)
-        # self.power_date_convert()
+        self.power_date_convert()
         self.weather_date_convert()
-        self.weather_averaging()
+        self.power_calc()
 
     def open(self, power_file, weather_file):
         with open(power_file, 'r') as f:
@@ -38,62 +27,61 @@ class Model():
         self.weather = raw_weather.dataframe
 
     def power_date_convert(self):
-        date = ['Year', 'Month', 'Day', 'Hour', 'Minute']
-        power_dt = pd.DataFrame(columns=date)
-        tmp_dt = self.power.loc[:, 'Time']
-        for i in range(len(tmp_dt)):
-            list_dt = tmp_dt.loc[i].split()
-            month = self.month[list_dt[1]]
-            day = list_dt[0]
-            hour = list_dt[2].split(':')[0]
-            minute = list_dt[2].split(':')[1]
-            next_row = [0, month, day, hour, minute]
-            next_row = [[int(i) for i in next_row]]
-            next_row = pd.DataFrame(next_row,
-                                    columns=date)
-            power_dt = pd.concat((power_dt, next_row),
-                                 ignore_index=True)
-        power_dt = pd.to_datetime(power_dt).rename('Datetime')
-        first_col = self.power.columns[1]
-        self.power = pd.concat((power_dt, self.power.loc[:, first_col:]),
-                               axis=1).sort_values('Datetime')
+        power_dt = self.power['Time']
+        power_dt = pd.to_datetime(power_dt, format='%d %b %H:%M',
+                                  errors='coerce').rename('Datetime')
+        self.power = pd.concat((power_dt, self.power.iloc[:, 1:]),
+                               axis=1).dropna().sort_values('Datetime')
         self.power = self.power.reset_index(drop=True)
 
     def weather_date_convert(self):
         weather_dt = self.weather.loc[:, 'Year':'Hour']
         weather_dt.loc[:, 'Hour'] = weather_dt.loc[:, 'Hour'] - 1
-        weather_dt = pd.to_datetime(weather_dt).rename('Datetime')
-        first_col = self.weather.columns[6]
-        self.weather = pd.concat((weather_dt, self.weather.loc[:, first_col:]),
-                                 axis=1).sort_values('Datetime')
+        weather_dt = pd.to_datetime(weather_dt)
+        weather_dt = weather_dt.map(lambda x: x.replace(year=1900))
+        weather_dt = weather_dt.rename('Datetime')
+        self.weather = pd.concat((weather_dt, self.weather.iloc[:, 6:]),
+                                 axis=1)
+        self.weather = self.weather.groupby(['Datetime'], as_index=False)
+        self.weather = self.weather.mean().sort_values('Datetime')
         self.weather = self.weather.reset_index(drop=True)
 
-    def year_to_zero(self, df):
-        datetime = pd.Series([]).rename.('Datetime')
-        tmp_datetime = df.Datetime
-        for i in range(len(tmp_datetime)):
-            dt = tmp_datetime.loc[i].replace(year=0)
-            datetime = pd.concat((datetime, dt),
-                                 ignore_index=True)
+    def power_calc(self):
+        self.power_total = self.power.iloc[:, 1:].sum()
+        per_cat = {
+            'Datetime': self.power.iloc[:, 0],
+            'Ligths': self.power.iloc[:, [1, 2]].sum(axis=1),
+            'Equipment': self.power.iloc[:, [3, 4]].sum(axis=1),
+            'Fan': self.power.iloc[:, [5, 6, 7, 10]].sum(axis=1),
+            'Cooling': self.power.iloc[:, [8, 9]].sum(axis=1),
+            'Pump': self.power.iloc[:, [10]].sum(axis=1)
+            }
+        self.power_per_cat = pd.DataFrame.from_dict(per_cat)
+        self.power_per_cat_total = self.power_per_cat.iloc[:, 1:].sum()
+        self.power_per_cat_month = self.power_per_cat.groupby(
+            pd.Grouper(key='Datetime',
+            freq='1M')).sum().reset_index()
+        self.power_total_per_cat_month = self.power_per_cat_month.sum(axis=1)
+ 
+        dates = self.power_per_cat_month['Datetime'].dt.strftime('%b')
+        cols = self.power_per_cat_month.shape[1] - 1
+        pos = np.arange(len(dates))
+        for i in range(cols):
+            shift = -0.4 + i*1/cols
+            plt.bar(pos + shift,
+                    self.power_per_cat_month.iloc[:, i + 1]/1e3,
+                    label=self.power_per_cat_month.columns[i + 1],
+                    width=0.8/cols)
+            plt.yscale('log')
+        else:
+            plt.plot(dates, self.power_total_per_cat_month/1e3, label='Total')
+            plt.legend(loc='best')
+            plt.grid()
+            plt.ylabel('P, кВт')
+            plt.yscale('log')
+            plt.show()
 
-    def weather_averaging(self):
-        years = self.weather.Datetime.dt.year.drop_duplicates()
-        years = years.reset_index(drop=True)
-        for year in years:
-            y_weather = self.weather[self.weather.Datetime.dt.year == 1982]
-            y_weather = y_weather.reset_index(drop=True)
-            if hasattr(self, 'average_weather'):
-                pass
-            else:
-                
-                for in range in 
-                tmp_datetime = y_weather.Datetime.dt.replace(year=0)
-                pass
-        
 
-# pd.to_datetime(power.loc[1, 'Time'])
-
-# time = power.loc[1, 'Time']
 
 model = Model()
 model.processing('my_home.csv', r'RUS_Arkhangelsk.225500_IWEC.epw')
