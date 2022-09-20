@@ -5,6 +5,7 @@
 # from __future__ import
 
 # Standard Library
+import locale
 from copy import deepcopy
 
 # Third-party Libraries
@@ -13,9 +14,11 @@ from copy import deepcopy
 import epw
 import numpy as np
 import pandas as pd
+import matplotlib as mpl
 import matplotlib.pyplot as plt
 
 
+# === Классы ===
 class Model():
 
     def __init__(self):
@@ -114,6 +117,12 @@ class Opener():
         self.weather = self.weather.mean().sort_values('Datetime')
         self.weather = self.weather.reset_index(drop=True)
 
+# === Функции ===
+
+
+# === Обработка ===
+locale.setlocale(locale.EN_US.UTF-8)
+mpl.rcParams['figure.figsize'] = [8.0, 6.0]
 
 if __name__ == '__main__':
 
@@ -123,5 +132,5 @@ if __name__ == '__main__':
     weather_file = r'./raw_data/RUS_Arkhangelsk.225500_IWEC.epw'
 
     model.processing(electrical_power_file, 'electrical_power')
-    model.processing(heat_power_file, 'heat_power')
-    model.processing(weather_file, 'weather')
+    # model.processing(heat_power_file, 'heat_power')
+    # model.processing(weather_file, 'weather')
