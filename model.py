@@ -160,11 +160,12 @@ class Model():
         return cat
 
     def print_tables(self, power):
-        print('Исходная таблица')
+        print('Энергопотребление')
+        print(50*'-' + '\nИсходная таблица')
         print(power[0])
-        print('Таблица по категориям')
+        print(50*'-' + '\nТаблица по категориям')
         print(power[1])
-        print('Таблица по категориям по месяцам')
+        print(50*'-' + '\nТаблица по категориям по месяцам')
         print(power[2])
 
     def power_plot(self, power):
@@ -359,7 +360,7 @@ if __name__ == '__main__':
     model.processing(electrical_power_file,
                       'electrical_power',
                       show_tables=True)
-    # model.processing(heat_power_file,
-    #                  'heat_power',
-    #                  show_tables=True)
+    model.processing(heat_power_file,
+                      'heat_power',
+                      show_tables=True)
     # model.processing(weather_file, 'weather')
