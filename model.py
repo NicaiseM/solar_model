@@ -112,6 +112,8 @@ class Model():
             power = self.power[0]
         else:
             power = self.power[1]
+        power_total_per_time = power[0].iloc[:, 1:].sum(axis=1).rename('Total')
+        power[0] = pd.concat((power[0], power_total_per_time), axis=1)
         # Определение суммарных значений
         power_total = power[0].iloc[:, 1:].sum()
         # Создание заголовка строки суммарных значений
@@ -145,13 +147,15 @@ class Model():
                 'Equipment': power[0].iloc[:, [3, 4]].sum(axis=1),
                 'Fan': power[0].iloc[:, [5, 6, 7, 10]].sum(axis=1),
                 'Cooling': power[0].iloc[:, [8, 9]].sum(axis=1),
-                'Pump': power[0].iloc[:, [10]].sum(axis=1)
+                'Pump': power[0].iloc[:, [10]].sum(axis=1),
+                'Total': power[0].iloc[:, [11]].sum(axis=1)
                 }
         else:
             cat = {
                 'Datetime': power[0].iloc[:, 0],
                 'Heating': power[0].iloc[:, [1, 2]].sum(axis=1),
-                'Cooling': power[0].iloc[:, [3, 4, 5]].sum(axis=1)
+                'Cooling': power[0].iloc[:, [3, 4, 5]].sum(axis=1),
+                'Total': power[0].iloc[:, [6]].sum(axis=1)
                 }
         return cat
 
@@ -352,10 +356,10 @@ if __name__ == '__main__':
     heat_power_file = r'./raw_data/my_home_heat.csv'
     weather_file = r'./raw_data/RUS_Arkhangelsk.225500_IWEC.epw'
 
-    # model.processing(electrical_power_file,
-    #                  'electrical_power',
+    model.processing(electrical_power_file,
+                      'electrical_power',
+                      show_tables=True)
+    # model.processing(heat_power_file,
+    #                  'heat_power',
     #                  show_tables=True)
-    model.processing(heat_power_file,
-                     'heat_power',
-                     show_tables=True)
     # model.processing(weather_file, 'weather')
