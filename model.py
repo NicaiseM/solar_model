@@ -133,6 +133,7 @@ class Model():
         # power.append(power_per_cat_per_month.sum(axis=1))
         power[2] = pd.concat((power[2], power[1].iloc[-1, :].to_frame().T))
         power[2] = power[2].reset_index(drop=True)
+        self.power_plot(power[2].iloc[:-1, :])
         # Печать таблиц при необходимости
         if show_tables:
             self.print_tables(power)
@@ -145,10 +146,10 @@ class Model():
                 'Datetime': power[0].iloc[:, 0],
                 'Ligths': power[0].iloc[:, [1, 2]].sum(axis=1),
                 'Equipment': power[0].iloc[:, [3, 4]].sum(axis=1),
-                'Fan': power[0].iloc[:, [5, 6, 7, 10]].sum(axis=1),
+                'Fan': power[0].iloc[:, [5, 6, 7, 11]].sum(axis=1),
                 'Cooling': power[0].iloc[:, [8, 9]].sum(axis=1),
                 'Pump': power[0].iloc[:, [10]].sum(axis=1),
-                'Total': power[0].iloc[:, [11]].sum(axis=1)
+                'Total': power[0].iloc[:, [12]].sum(axis=1)
                 }
         else:
             cat = {
@@ -169,25 +170,31 @@ class Model():
         print(power[2])
 
     def power_plot(self, power):
-        # dates = self.el_power_per_cat_month['Datetime'].dt.strftime('%b')
-        # cols = self.el_power_per_cat_month.shape[1] - 1
-        # pos = np.arange(len(dates))
-        # for i in range(cols):
-        #     shift = -0.4 + i*1/cols
-        #     plt.bar(pos + shift,
-        #             self.el_power_per_cat_month.iloc[:, i + 1]/1e3,
-        #             label=self.el_power_per_cat_month.columns[i + 1],
-        #             width=0.8/cols)
-        #     plt.yscale('log')
-        # else:
-        #     plt.plot(dates,
-        #              self.el_power_total_per_cat_month/1e3,
-        #              label='Total')
-        #     plt.legend(loc='best')
-        #     plt.grid()
-        #     plt.ylabel('P, кВт')
-        #     plt.yscale('log')
-        #     plt.show()
+        dates = power['Datetime']
+        dates = dates.astype('datetime64[ns]').dt.strftime('%b')
+        cols = power.shape[1] - 2
+        pos = np.arange(len(dates))
+        for i in range(cols):
+            shift = -0.4 + i*1/cols
+            # plt.bar(pos + shift,
+            #         power.iloc[:, i + 1]/1e3,
+            #         power.columns[i + 1],
+            #         width=0.8/cols)
+            y = power.iloc[:, i + 1]/1e3
+            plt.bar(pos + shift,
+                    y,
+                    width=0.8/cols,
+                    label=y.name)
+            plt.yscale('log')
+        else:
+            plt.plot(dates,
+                     power.iloc[:, -1]/1e3,
+                     label='Total')
+            plt.legend(loc='best')
+            plt.grid()
+            plt.ylabel('P, кВт')
+            plt.yscale('log')
+            plt.show()
         pass
 
 class Opener():
