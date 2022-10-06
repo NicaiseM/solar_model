@@ -1,14 +1,41 @@
-# Файлы данных и байткода
-*.pyc
+### Общие настройки ###
+
+# Данные
+*.csv
 *.csv#
+*.xls
+*.xlsx
+*.mat
+*.pgc
+*.ana
+*.anp
 
-# Каталоги проектов Spyder
-**/.spyproject
-
-# Каталоги кэша и байткода
+# Кэш
 **/__pycache__
 **/slprj
+*.pyc
+*.slxc
+
+# Проекты
+**/.spyproject
+*.sublime-project
+*.sublime-workspace
 
 # Бэкапы и дистрибутивы
 **/*.build
 **/*.dist
+
+# LaTeX
+*.log
+*.aux
+*.toc
+*.out
+*.synctex.gz
+*.synctex(busy)
+
+# Медиа
+*.mp4
+
+### Частные настройки ###
+
+# ---
