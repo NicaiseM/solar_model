@@ -11,6 +11,7 @@
 **/slprj
 *.pyc
 *.slxc
+*.tmp
 
 # Проекты
 **/.spyproject
@@ -28,6 +29,8 @@
 *.out
 *.synctex.gz
 *.synctex(busy)
+*.bbl
+*.blg
 
 # Медиа
 *.mp4
